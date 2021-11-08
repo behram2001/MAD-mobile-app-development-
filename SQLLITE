@@ -1,0 +1,246 @@
+package com.example.sqltask
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        val context = this
+        var db = DataBaseHandler(context)
+
+
+        add.setOnClickListener({
+            if (tex1.text.toString().length > 0 &&
+                tex2.text.toString().length > 0 &&
+                tex3.text.toString().length > 0
+            ) {
+                var users = user(tex1.text.toString(), tex2.text.toString(), tex3.text.toString())
+                var db = DataBaseHandler(context)
+                db.insertData(users)
+
+            } else {
+                Toast.makeText(context, "Please fill the fields", Toast.LENGTH_LONG).show()
+            }
+
+
+        })
+
+        displ.setOnClickListener{
+               ReadMe()
+
+        }
+
+
+
+    }
+    private fun ReadMe(){
+              val dw = DataBaseHandler(this)
+              val res = dw.allData
+              val buffer = StringBuffer()
+              if (res != null && res.count>0){
+                  while (res.moveToNext()){
+                      buffer.append("Name ::"+res.getString(1)+"\n")
+                      buffer.append("REG ::"+res.getString(2)+"\n")
+                      buffer.append("SESSION ::"+res.getString(3)+"\n")
+                  }
+                  text5.text=buffer.toString()
+                  Toast.makeText(this, "DataRte", Toast.LENGTH_SHORT).show()
+              }
+              else{
+                  Toast.makeText(this, "NO data", Toast.LENGTH_SHORT).show()
+              }
+
+    }
+
+
+
+
+}
+
+
+#######      DataBaseHandler         ######
+
+
+
+
+
+package com.example.sqltask
+
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
+import android.widget.Toast
+
+
+val DATABASE_NAME ="MyDB"
+val TABLE_NAME ="Users"
+val COL_ID= "id"
+val COL_NAME="name"
+val COL_SESSION="session"
+val COL_REG="reg"
+class DataBaseHandler (var context: Context):SQLiteOpenHelper(context,DATABASE_NAME,null,1){
+    override fun onCreate(p0: SQLiteDatabase?) {
+        val createTable = "CREATE TABLE " + TABLE_NAME+" ( "+
+                COL_ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                COL_NAME+" VARCHAR(256), "+
+                COL_SESSION+" VARCHAR(256), "+
+                COL_REG+" VARCHAR(256)) ";
+        Log.d("quer",createTable)
+        p0?.execSQL(createTable)
+            }
+
+    override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
+        TODO("Not yet implemented")
+    }
+
+    val allData : Cursor
+      get(){val db=this.writableDatabase
+      return db.rawQuery("select * from  ${TABLE_NAME}",null)
+      }
+    fun insertData(user: user){
+        val db = this.writableDatabase
+        val cv = ContentValues()
+        cv.put(COL_NAME,user.name)
+        cv.put(COL_SESSION,user.sessi)
+        cv.put(COL_REG,user.reg)
+        val result = db.insert(TABLE_NAME,null,cv)
+        if(result == -1.toLong())
+            Toast.makeText(context,"Failed",Toast.LENGTH_LONG).show()
+        else
+            Toast.makeText(context,"succes",Toast.LENGTH_LONG).show()
+
+    }
+}
+
+
+
+
+package com.example.sqltask
+
+class user {
+    var id: Int =0
+    var name:String = ""
+    var sessi:String = ""
+    var reg:String = ""
+
+    constructor(name: String,sessi:String,reg:String){
+        this.name=name
+        this.sessi=sessi
+        this.reg=reg
+    }
+
+}
+
+
+
+
+
+
+
+
+### Activity XML
+
+
+
+
+
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+
+    >
+    <EditText
+        android:id="@+id/tex1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        >
+
+    </EditText>
+    <EditText
+        android:id="@+id/tex2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        >
+
+    </EditText>
+    <EditText
+        android:id="@+id/tex3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        >
+
+    </EditText>
+    <Button
+        android:id="@+id/add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ADD"
+        android:layout_margin="10dp"
+        >
+
+    </Button>
+    <Button
+        android:id="@+id/displ"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dispaly"
+        android:layout_margin="10dp"
+        >
+
+    </Button>
+
+
+
+</LinearLayout>
+
+
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/text5"
+        android:background="@color/purple_700"
+        >
+
+    </TextView>
+
+</ScrollView>
+</LinearLayout>
+
+
+
+
+
+
+
